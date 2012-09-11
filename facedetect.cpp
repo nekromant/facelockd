@@ -113,7 +113,9 @@ int main( int argc, const char** argv )
 
   cvNamedWindow( "result", 1 );
   int fails=0;
+  int matches=0;
   int maxfails=120;
+  int unlockthrshld=10;
   int state=1;
   if( capture )
     {
@@ -136,7 +138,8 @@ int main( int argc, const char** argv )
 	  int cnt = detectAndDraw( frameCopy, cascade, nestedCascade, scale );
 	  // printf("==> %d\n", cnt);
 	  if (cnt) {
-	    if (fails > maxfails)
+	    matches++;
+	    if ((fails > maxfails) && (matches > unlockthrshld))
 	      system("facelock unlock");
 	    fails=0;
 	  }
@@ -147,6 +150,7 @@ int main( int argc, const char** argv )
 	  }
 	  printf("fails count: [ %d / %d ]  \r", fails,maxfails);
 	  fflush(stdout);
+	  waitKey( 10 );
         }
 
       waitKey(0);
