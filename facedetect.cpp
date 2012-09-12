@@ -54,15 +54,15 @@ inline void processMatches(vector<Rect> faces)
   int cnt = faces.size();
 	  if (cnt) {
 	    matches++;
+
 	    if ((fails > maxfails) && (matches > unlockthrshld))
 	      {
 	      system("facelock unlock");
 	      fails=0;
 	      }
-	    if ((matches > unlockthrshld))
-	      {
+
+	    if ((fails < maxfails))
 		fails=0;
-	      }
 	  }
 	  if (0==cnt) {
 	    matches=0;
