@@ -17,7 +17,7 @@ using namespace cv;
 
 int fails=0;
 int matches=0;
-int maxfails=120;
+int maxfails=50;
 int unlockthrshld=10;
 int framedelay = 100;
 int capx = 320;
@@ -55,16 +55,23 @@ inline void processMatches(vector<Rect> faces)
 	  if (cnt) {
 	    matches++;
 	    if ((fails > maxfails) && (matches > unlockthrshld))
+	      {
 	      system("facelock unlock");
-	    fails=0;
+	      fails=0;
+	      }
+	    if ((matches > unlockthrshld))
+	      {
+		fails=0;
+	      }
 	  }
 	  if (0==cnt) {
+	    matches=0;
 	    fails++;
 	    if (fails == maxfails)
 	      system("facelock lock");
 	  }
-	  printf("Preparation: %0.4g ms ; Detection: %0.4g ms ; fails count: [ %3d / %3d ]  \r", prptime, dtcttime, fails,maxfails);
-	  fflush(stdout);
+	  printf("Preparation: %0.4g ms ; Detection: %0.4g ms ; fails count: [ %3d / %3d ] \r ", prptime, dtcttime, fails,maxfails);
+	  
 }
 
 int main( int argc, const char** argv )
@@ -78,11 +85,15 @@ int main( int argc, const char** argv )
   const String nestedCascadeOpt = "--nested-cascade";
   size_t nestedCascadeOptLen = nestedCascadeOpt.length();
   String inputName;
-  CascadeClassifier cascade, nestedCascade;
+  CascadeClassifier cascade, cascade2;
   double scale = 1;
 
   capture = cvCaptureFromCAM(0);
 	  if (!cascade.load( argv[1] ))
+	    {
+	      exit(1);
+	    }
+if (!cascade2.load( argv[2] ))
 	    {
 	      exit(1);
 	    }
@@ -94,14 +105,19 @@ int main( int argc, const char** argv )
     {
       IplImage* iplImg = cvQueryFrame( capture );
       frame = iplImg; 
-      vector<Rect> faces;
+      vector<Rect> faces, faces2;
       Mat frame_opt = imagePrepare(frame);
 				      //|CV_HAAR_FIND_BIGGEST_OBJECT
 				      //|CV_HAAR_DO_ROUGH_SEARCH
 				      //|CV_HAAR_DO_CANNY_PRUNING
       faces = cascadeClassify(frame_opt, cascade, CV_HAAR_FIND_BIGGEST_OBJECT, Size(40,40));
+      faces2 = cascadeClassify(frame_opt, cascade2, CV_HAAR_FIND_BIGGEST_OBJECT, Size(40,40));
+      printf(" %d / %d | ", faces.size(), faces2.size());
+	faces.insert(faces.end(), faces2.begin(), faces2.end());
       processMatches(faces);
-      cv::imshow("result", frame);
+      //cv::imshow("result", frame);
+      
+      fflush(stdout);
       waitKey( framedelay );
     }
 }
