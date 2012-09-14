@@ -15,6 +15,10 @@ extern "C" {
 using namespace std;
 using namespace cv;
 
+#include "inputstream.hpp"
+#include "cvinputstream.hpp"
+
+
 int fails=0;
 int matches=0;
 int maxfails=50;
@@ -22,6 +26,7 @@ int unlockthrshld=10;
 int framedelay = 100;
 int capx = 320;
 int capy = 240;
+
 static double dtcttime;
 static double prptime;
 
@@ -54,7 +59,6 @@ inline void processMatches(vector<Rect> faces)
   int cnt = faces.size();
 	  if (cnt) {
 	    matches++;
-
 	    if ((fails > maxfails) && (matches > unlockthrshld))
 	      {
 	      system("facelock unlock");
@@ -74,7 +78,37 @@ inline void processMatches(vector<Rect> faces)
 	  
 }
 
-int main( int argc, const char** argv )
+static lua_State *L;
+
+
+void report_errors(lua_State *L, int status)
+{
+  if ( status!=0 ) {
+    std::cerr << "-- " << lua_tostring(L, -1) << std::endl;
+    lua_pop(L, 1); // remove error message
+  }
+}
+
+
+int main (int argc, const char** argv) {
+  L = lua_open();
+  luaL_openlibs(L);
+  printf("Loading settings %s\n", argv[1]);
+  int s = luaL_loadfile(L, argv[1]);
+  printf("Done with result %d\n", s);
+  if ( s==0 ) {
+    // execute Lua program
+    s = lua_pcall(L, 0, LUA_MULTRET, 0);
+  }
+  report_errors(L, s);
+  cvInputStream *cvd = new cvInputStream(); 
+  cvd->loadConfigFromLua(L,"frontcam");
+  cvd->getNextFrame();
+}
+
+
+
+int _old_main( int argc, const char** argv )
 {
   CvCapture* capture = 0;
   Mat frame, frameCopy, image;
@@ -116,7 +150,6 @@ if (!cascade2.load( argv[2] ))
 	faces.insert(faces.end(), faces2.begin(), faces2.end());
       processMatches(faces);
       //cv::imshow("result", frame);
-      
       fflush(stdout);
       waitKey( framedelay );
     }
