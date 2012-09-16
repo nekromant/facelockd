@@ -1,12 +1,14 @@
 #ifndef __CVINPUTSTREM_H
 #define __CVINPUTSTREM_H
 
+#include "detectable.hpp"
+
 class cvInputStream : inputStream {
   CvCapture* capture;
-  
+  vector<detectable*> detectables;
 public:
-  int loadConfigFromLua(lua_State *L, String instance);
-  Mat getNextFrame();
+  cvInputStream(lua_State *L, String instance);
+  void processNextFrame();
 };
 
 #endif

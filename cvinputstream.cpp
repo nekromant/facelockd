@@ -18,14 +18,9 @@ using namespace cv;
 #include "inputstream.hpp"
 #include "cvinputstream.hpp"
 
-/* 
-   cvInputStream::cvInputStream(){
-   printf("Creating cvInputStream Instance...\n");
-   }
-*/
-
-
-int cvInputStream::loadConfigFromLua(lua_State *L, String instance) {
+cvInputStream::cvInputStream(lua_State *L, String instance) {
+  int stack_count = lua_gettop(L);
+  printf("Current stack top: %d\n", stack_count);
   lua_getglobal(L,instance.data());
   assert(lua_istable(L, -1));
 
@@ -61,8 +56,8 @@ int cvInputStream::loadConfigFromLua(lua_State *L, String instance) {
   
   lua_pushstring(L, "cascadeprofiling");
   lua_gettable(L, -2);
-  assert(lua_isbolean(L,-1));
-  int cprofile = lua_tobolean(L,-1);
+  assert(lua_isboolean(L,-1));
+  int cprofile = lua_toboolean(L,-1);
   lua_pop(L,1);
 
   printf("cvInputStream: %s (%d) %dx%d\n", instance.data(), camid, w, h);
@@ -75,13 +70,33 @@ int cvInputStream::loadConfigFromLua(lua_State *L, String instance) {
     printf("cvInputStream: Debug enabled to window '%s'\n", wname.data());
     cvNamedWindow( wname.data(), 1 );
     }
-  sleep(100);
+
   /* Now we have to load cascades from config */ 
-  
+  lua_pushstring(L, "detect");
+  lua_gettable(L, -2);
+  assert(lua_istable(L,-1));
+  /* Iterate over table members */
+  int i=1;
+  while(1)
+    {
+      lua_pushnumber(L, i++);
+      lua_gettable(L, -2);
+      if (!lua_isstring(L,-1)) {
+	lua_pop(L,1);
+	break;
+	}
+      const char* s = lua_tostring(L,-1);
+      detectable *dtct = new detectable(L,String(s));
+      detectables.push_back(dtct);
+      lua_pop(L,1);
+    }  
+  /* pop remaining 2 elements: detect, and instance */
+  lua_pop(L,2);
+  stack_count = lua_gettop(L);
+  printf("Current stack top: %d\n", stack_count);
 }
 
 /* process next frame actually */ 
-Mat cvInputStream::getNextFrame(){
-  
-  return Mat();
+void cvInputStream::processNextFrame(){
+  //return Mat();
 }

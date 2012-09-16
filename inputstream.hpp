@@ -4,7 +4,7 @@
 class inputStream {
 public: 
   virtual int loadConfigFromLua(lua_State *L, String instance) { };
-  virtual Mat getNextFrame() { } ;
+  virtual void processNextFrame() { } ;
 };
 
 #endif

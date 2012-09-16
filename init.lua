@@ -1,11 +1,13 @@
 print(" === Necromant's facelock daemon 0.1, entering Lua Environment === \n");   
 
 face = {
-   cascades = {"./haarcascade_frontalface_alt2.xml", "./haarcascade_profileface.xml"}, 
+   cascades = {"./cascades/haarcascade_frontalface_alt2.xml", "./cascades/haarcascade_profileface.xml"}, 
    maxsize = { 30, 30 },
-   nearonjs = 4,
+   nearobjs = 4,
    enabled = true,
    debug = true, 
+   simple_handlers = { "face_detected" },
+   shape_handlers = { "shape_processing" },
 }
 
 frontcam = {
@@ -20,6 +22,10 @@ frontcam = {
    detect = { "face" },
 }
 
+
+function face_detected(count)
+   print("Lol I see ya!");
+end
 
 print("boot: opening up cameras\n");   
 
