@@ -31,9 +31,9 @@ detectable::detectable(lua_State* L, String instance){
   lua_pushstring(L, "cascades");
   lua_gettable(L, -2);
   int i = 1;
+  const char *s;  
   while (1)
     {
-      const char *s;  
       get_str_member(s,i++, lua_pop(L, 1); break; );
       printf("Loading cascade: %s\n", s);
       CascadeClassifier *cascade = new CascadeClassifier;
@@ -48,9 +48,47 @@ detectable::detectable(lua_State* L, String instance){
   get_int_member(w,1, assert(0););
   get_int_member(h,2, assert(0););
   lua_pop(L,1);
-  maxsz = new Size(w,h);
+  minsz = new Size(w,h);
+  /* Now let's load the handlers */
+
+  lua_pushstring(L, "simple_handlers");
+  lua_gettable(L, -2);
+  assert(lua_istable(L, -1));
+  i=1;
+  while (1)
+    {
+      get_str_member(s,i++, lua_pop(L, 1); break; );
+      printf("Attaching simple handler: %s\n", s);
+      simple_handlers.push_back(String(s));     
+    } 
+  lua_pop(L,1);
+  lua_pushstring(L, "shape_handlers");
+  lua_gettable(L, -2);
+  assert(lua_istable(L, -1));
+  i=1;
+  while (1)
+    {
+      get_str_member(s,i++, lua_pop(L, 1); break; );
+      printf("Attaching shape handler: %s\n", s);
+      simple_handlers.push_back(String(s));     
+    } 
+  lua_pop(L,1);  
   printf("Detectable: %s (%dx%d); nearobjs %d; debug: %d; enabled: %d\n", 
 	 instance.data(), w, h, nearobjs, debug, enabled);
-  lua_pop(L,1);
-  
+  lua_pop(L,1); 
+  flags=0; /*TODO: flags parsing */
+
+}
+
+vector<Rect> detectable::detect(Mat& frame) {
+  /* Since we're not going to remove objects in runtime, this is ok */
+  vector<Rect> rfaces;  
+  for (int i=0; i<cascades.size(); i++) {
+    vector<Rect> faces;  
+    cascades.at(i)->detectMultiScale(frame, faces,
+				     1.1, nearobjs, flags,
+				     *minsz );
+    rfaces.insert(rfaces.end(), faces.begin(), faces.end());
+  }
+  return rfaces;
 }

@@ -4,10 +4,14 @@
 class detectable {
 public:
   detectable(lua_State* L, String instance);
-  Rect detect(Mat& frame);
+  vector<Rect> detect(Mat& frame);
   int enabled, debug, nearobjs;
-  Size *maxsz;
+  int flags;
+  Size *minsz;
   vector<CascadeClassifier*> cascades;
+  vector<String> simple_handlers;
+  vector<String> shandlers;
+
 };
 
 #endif
