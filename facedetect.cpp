@@ -151,7 +151,7 @@ if (!cascade2.load( argv[2] ))
       printf(" %d / %d | ", faces.size(), faces2.size());
 	faces.insert(faces.end(), faces2.begin(), faces2.end());
       processMatches(faces);
-      //cv::imshow("result", frame);
+      //
       fflush(stdout);
       waitKey( framedelay );
     }
