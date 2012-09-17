@@ -1,21 +1,28 @@
-print(" === Necromant's facelock daemon 0.1, entering Lua Environment === \n");   
-
 front = {
    cascades = {"./cascades/haarcascade_frontalface_alt2.xml"}, 
-   maxsize = { 30, 30 },
+   -- Objects smaller that are ignored
+   minsize = { 30, 30 },
    nearobjs = 4,
    enabled = true,
    debug = true, 
+   -- Set the haar classifier flags: 
+   -- rough == do a rough search
+   -- biggest == find biggest object
+   -- cunny == do cunny pruning
+   -- scale == scale image. 
+   -- See OpenCV docs to make sense what it does 
+   flags = { "rough", "biggest", "canny" }, 
    simple_handlers = { "face_detected" },
    shape_handlers = { "shape_processing" },
 }
 
 profile = {
    cascades = {"./cascades/haarcascade_profileface.xml"}, 
-   maxsize = { 30, 30 },
+   minsize = { 30, 30 },
    nearobjs = 4,
    enabled = true,
    debug = true, 
+   flags = { "rough", "canny" }, 
    simple_handlers = { "face_detected" },
    shape_handlers = { "shape_processing" },
 }
@@ -38,6 +45,5 @@ function face_detected(count)
    print("I see " .. count .. " faces");
 end
 
-print("boot: opening up cameras\n");   
 
 

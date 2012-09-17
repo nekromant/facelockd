@@ -17,9 +17,23 @@ using namespace cv;
 #include "detectable.hpp"
 #include "lua_helpers.h"
 
+void detectable::parse_flag(const char* flag){
+  if (0==strcmp(flag, "scale")) {
+    flags |= CV_HAAR_SCALE_IMAGE;
+  } else if (0==strcmp(flag, "rough")) {
+    flags |= CV_HAAR_DO_ROUGH_SEARCH;
+  } else if (0==strcmp(flag, "canny")) {
+    flags |= CV_HAAR_DO_CANNY_PRUNING;
+  } else if (0==strcmp(flag, "biggest")) {
+    flags |= CV_HAAR_FIND_BIGGEST_OBJECT;
+  }else {
+    printf("Fatal: don't know flag '%s'\n", flag);
+  }
+}
 
 detectable::detectable(lua_State* L, String instance){
   printf("Loading a detectable object: %s\n", instance.data());
+
   lua_getglobal(L,instance.data());
   assert(lua_istable(L, -1));
   
@@ -42,7 +56,7 @@ detectable::detectable(lua_State* L, String instance){
     }
   lua_pop(L,1);
   int w,h;
-  lua_pushstring(L, "maxsize");
+  lua_pushstring(L, "minsize");
   lua_gettable(L, -2);
   assert(lua_istable(L, -1));
   get_int_member(w,1, assert(0););
@@ -51,6 +65,15 @@ detectable::detectable(lua_State* L, String instance){
   minsz = new Size(w,h);
   /* Now let's load the handlers */
 
+  lua_pushstring(L, "flags");
+  lua_gettable(L, -2);
+  while (1)
+    {
+      get_str_member(s,i++, lua_pop(L, 1); break; );
+      printf("Adding flag: %s\n", s);
+      parse_flag(s);     
+    } 
+  lua_pop(L,1);
   lua_pushstring(L, "simple_handlers");
   lua_gettable(L, -2);
   assert(lua_istable(L, -1));
@@ -90,6 +113,7 @@ vector<Rect> detectable::detect(Mat& frame, lua_State *L) {
   /* Since we're not going to remove objects in runtime, this is ok */
   vector<Rect> rfaces;  
   int i, j;
+  //flags = CV_HAAR_FIND_BIGGEST_OBJECT;
   for (int i=0; i<cascades.size(); i++) {
     vector<Rect> faces;  
     cascades.at(i)->detectMultiScale(frame, faces,

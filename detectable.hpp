@@ -5,6 +5,7 @@ class detectable {
 public:
   detectable(lua_State* L, String instance);
   vector<Rect> detect(Mat& frame, lua_State* L);
+  void parse_flag(const char* s);
   int enabled, debug, nearobjs;
   int flags;
   Size *minsz;
@@ -12,6 +13,7 @@ public:
   vector<String> simple_handlers;
   vector<String> shape_handlers;
   String wname; /* Debug window name */
+  
   
 };
 
