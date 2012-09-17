@@ -101,8 +101,11 @@ int main (int argc, const char** argv) {
     s = lua_pcall(L, 0, LUA_MULTRET, 0);
   }
   report_errors(L, s);
-  cvInputStream *cvd = new cvInputStream(L,"frontcam"); 
-
+  cvInputStream *cvd = new cvInputStream(L,"frontcam");
+  while(1)
+    {
+      cvd->processNextFrame(L);
+    }
 }
 
 

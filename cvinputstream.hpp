@@ -6,9 +6,10 @@
 class cvInputStream : inputStream {
   CvCapture* capture;
   vector<detectable*> detectables;
+  String wname;
 public:
   cvInputStream(lua_State *L, String instance);
-  void processNextFrame();
+  void processNextFrame(lua_State* L);
 };
 
 #endif

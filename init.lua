@@ -24,7 +24,7 @@ frontcam = {
 
 
 function face_detected(count)
-   print("Lol I see ya!");
+   print("I see " .. count .. " faces");
 end
 
 print("boot: opening up cameras\n");   

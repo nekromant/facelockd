@@ -66,7 +66,7 @@ cvInputStream::cvInputStream(lua_State *L, String instance) {
   cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH, w); 
   cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT, h); 
   if (debug) {
-    String wname = String("cvInputStream: ") + instance;
+    wname = String("cvInputStream: ") + instance;
     printf("cvInputStream: Debug enabled to window '%s'\n", wname.data());
     cvNamedWindow( wname.data(), 1 );
     }
@@ -97,6 +97,19 @@ cvInputStream::cvInputStream(lua_State *L, String instance) {
 }
 
 /* process next frame actually */ 
-void cvInputStream::processNextFrame(){
-  //return Mat();
+void cvInputStream::processNextFrame(lua_State* L){
+  IplImage* iplImg = cvQueryFrame( capture );
+  int i;
+  Mat img = iplImg;
+  Mat gray(img.rows, img.cols, CV_8UC1);
+  if (debug)
+    cv::imshow(wname, img);
+  
+  cvtColor( img, gray, CV_BGR2GRAY );
+  equalizeHist( gray, gray );
+  /* Now send it to detectables */
+  for (i=0; i<detectables.size(); i++) {
+    detectables.at(i)->detect(gray,L);
+    }
+  
 }

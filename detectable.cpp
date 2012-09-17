@@ -70,7 +70,7 @@ detectable::detectable(lua_State* L, String instance){
     {
       get_str_member(s,i++, lua_pop(L, 1); break; );
       printf("Attaching shape handler: %s\n", s);
-      simple_handlers.push_back(String(s));     
+      shape_handlers.push_back(String(s));     
     } 
   lua_pop(L,1);  
   printf("Detectable: %s (%dx%d); nearobjs %d; debug: %d; enabled: %d\n", 
@@ -80,9 +80,10 @@ detectable::detectable(lua_State* L, String instance){
 
 }
 
-vector<Rect> detectable::detect(Mat& frame) {
+vector<Rect> detectable::detect(Mat& frame, lua_State *L) {
   /* Since we're not going to remove objects in runtime, this is ok */
   vector<Rect> rfaces;  
+  int i, j;
   for (int i=0; i<cascades.size(); i++) {
     vector<Rect> faces;  
     cascades.at(i)->detectMultiScale(frame, faces,
@@ -90,5 +91,19 @@ vector<Rect> detectable::detect(Mat& frame) {
 				     *minsz );
     rfaces.insert(rfaces.end(), faces.begin(), faces.end());
   }
+  
+  /* Now, let's call lua handlers, if any */
+  for (i=0; i<simple_handlers.size(); i++) {
+    lua_getglobal(L, simple_handlers.at(i).data());  /* function to be called */
+    lua_pushnumber(L, rfaces.size());   /* push 1st argument */
+    if (lua_pcall(L, 1, 0, 0) != 0)
+      {
+	printf("error running function `%s': %s\n",
+	       simple_handlers.at(i).data(), lua_tostring(L, -1));
+	assert(0);
+      }
+  } 
   return rfaces;
 }
+
+
