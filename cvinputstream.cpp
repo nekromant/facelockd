@@ -45,7 +45,7 @@ cvInputStream::cvInputStream(lua_State *L, String instance) {
   lua_pushstring(L, "debug");
   lua_gettable(L, -2);
   assert(lua_isboolean(L,-1));
-  int debug = lua_toboolean(L,-1);
+  debug = lua_toboolean(L,-1);
   lua_pop(L,1);
 
   lua_pushstring(L, "camid");
@@ -62,13 +62,16 @@ cvInputStream::cvInputStream(lua_State *L, String instance) {
 
   printf("cvInputStream: %s (%d) %dx%d\n", instance.data(), camid, w, h);
   printf("cvInputStream: Adjusting delays to match %d fps\n", fps);
+  framedelay = 1000 / fps;
   capture = cvCaptureFromCAM(camid);
   cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH, w); 
   cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT, h); 
   if (debug) {
     wname = String("cvInputStream: ") + instance;
+    wpname = String("cvInputStream: ") + instance + String(" [processed] ");
     printf("cvInputStream: Debug enabled to window '%s'\n", wname.data());
     cvNamedWindow( wname.data(), 1 );
+    cvNamedWindow( wpname.data(), 1 );
     }
 
   /* Now we have to load cascades from config */ 
@@ -102,14 +105,17 @@ void cvInputStream::processNextFrame(lua_State* L){
   int i;
   Mat img = iplImg;
   Mat gray(img.rows, img.cols, CV_8UC1);
-  if (debug)
-    cv::imshow(wname, img);
   
   cvtColor( img, gray, CV_BGR2GRAY );
   equalizeHist( gray, gray );
+ if (debug)
+    {
+    cv::imshow(wname, img);
+    cv::imshow(wpname, gray);
+    }
   /* Now send it to detectables */
   for (i=0; i<detectables.size(); i++) {
     detectables.at(i)->detect(gray,L);
-    }
-  
+  }
+  waitKey(framedelay);
 }

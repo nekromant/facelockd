@@ -11,7 +11,8 @@ public:
   vector<CascadeClassifier*> cascades;
   vector<String> simple_handlers;
   vector<String> shape_handlers;
-
+  String wname; /* Debug window name */
+  
 };
 
 #endif

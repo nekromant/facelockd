@@ -76,6 +76,12 @@ detectable::detectable(lua_State* L, String instance){
   printf("Detectable: %s (%dx%d); nearobjs %d; debug: %d; enabled: %d\n", 
 	 instance.data(), w, h, nearobjs, debug, enabled);
   lua_pop(L,1); 
+  if (debug)
+    {
+      wname = String("detectable: ") + instance;
+      cvNamedWindow(wname.data(), 1);
+    }
+    
   flags=0; /*TODO: flags parsing */
 
 }
@@ -91,7 +97,20 @@ vector<Rect> detectable::detect(Mat& frame, lua_State *L) {
 				     *minsz );
     rfaces.insert(rfaces.end(), faces.begin(), faces.end());
   }
-  
+
+  if (debug) {
+    for (int i=0; i<rfaces.size(); i++) {
+      Mat tmp = frame; /* Make a copy of the frame */
+      Point center;
+      int radius;
+      center.x = cvRound((rfaces.at(i).x + rfaces.at(i).width*0.5));
+      center.y = cvRound((rfaces.at(i).y + rfaces.at(i).height*0.5));
+      radius = cvRound((rfaces.at(i).width + rfaces.at(i).height)*0.25);
+      circle( tmp, center, radius, CV_RGB(0,255,0), 3, 8, 0 );
+      cv::imshow(wname, frame);
+    }
+  }
+
   /* Now, let's call lua handlers, if any */
   for (i=0; i<simple_handlers.size(); i++) {
     lua_getglobal(L, simple_handlers.at(i).data());  /* function to be called */
