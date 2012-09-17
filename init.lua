@@ -16,8 +16,8 @@ front = {
    shape_handlers = { "shape_processing" },
 }
 
-profile = {
-   cascades = {"./cascades/haarcascade_profileface.xml"}, 
+eyes = {
+   cascades = {"./cascades/haarcascade_mcs_lefteye.xml"}, 
    minsize = { 30, 30 },
    nearobjs = 4,
    enabled = true,
@@ -37,7 +37,7 @@ frontcam = {
    enabled = true,
    debug = true,
    cascadeprofiling=true,
-   detect = { "front", "profile" },
+   detect = { "front" },
 }
 
 

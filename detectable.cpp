@@ -33,7 +33,7 @@ void detectable::parse_flag(const char* flag){
 
 detectable::detectable(lua_State* L, String instance){
   printf("Loading a detectable object: %s\n", instance.data());
-
+  iname = instance;
   lua_getglobal(L,instance.data());
   assert(lua_istable(L, -1));
   

@@ -57,7 +57,7 @@ cvInputStream::cvInputStream(lua_State *L, String instance) {
   lua_pushstring(L, "cascadeprofiling");
   lua_gettable(L, -2);
   assert(lua_isboolean(L,-1));
-  int cprofile = lua_toboolean(L,-1);
+  cprofile = lua_toboolean(L,-1);
   lua_pop(L,1);
 
   printf("cvInputStream: %s (%d) %dx%d\n", instance.data(), camid, w, h);
@@ -100,6 +100,9 @@ cvInputStream::cvInputStream(lua_State *L, String instance) {
 }
 
 /* process next frame actually */ 
+
+//void cvInputStream::processNextFrame(lua_State* L){
+
 void cvInputStream::processNextFrame(lua_State* L){
   IplImage* iplImg = cvQueryFrame( capture );
   int i;
@@ -108,14 +111,26 @@ void cvInputStream::processNextFrame(lua_State* L){
   
   cvtColor( img, gray, CV_BGR2GRAY );
   equalizeHist( gray, gray );
+
  if (debug)
     {
     cv::imshow(wname, img);
     cv::imshow(wpname, gray);
     }
+ 
   /* Now send it to detectables */
-  for (i=0; i<detectables.size(); i++) {
+ double t;
+ 
+ for (i=0; i<detectables.size(); i++) {
+
+   if (cprofile) t= (double)cvGetTickCount();
+
     detectables.at(i)->detect(gray,L);
+    if (cprofile) {
+      t = ((double) cvGetTickCount() - t ) / ((double)cvGetTickFrequency()*1000);
+      printf("Detectable: '%s' took %0.4g ms to process\n", detectables.at(i)->iname.data(), t);
+	};
   }
-  waitKey(framedelay);
+   
+ waitKey(framedelay);
 }

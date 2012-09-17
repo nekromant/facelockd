@@ -7,7 +7,7 @@ class cvInputStream : inputStream {
   CvCapture* capture;
   vector<detectable*> detectables;
   String wname, wpname;
-  int debug;
+  int debug, cprofile;
   int framedelay;
 public:
   cvInputStream(lua_State *L, String instance);
